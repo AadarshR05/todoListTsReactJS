@@ -6,9 +6,20 @@ import { Card, Container } from "react-bootstrap";
 import "./styles/TaskList.css";
 
 const TaskList = () => {
-  const [tasks, setTask] = useState<TaskPropType["tasks"][]>(taskData);
-  const [filteredTask, setFilteredTask] =
-    useState<TaskPropType["tasks"][]>(taskData);
+  const [tasks, setTask] = useState<TaskPropType["tasks"][]>([
+    {
+      id: 0,
+      title: "",
+      status: "complete",
+    },
+  ]);
+  const [filteredTask, setFilteredTask] = useState<TaskPropType["tasks"][]>([
+    {
+      id: 0,
+      title: "",
+      status: "complete",
+    },
+  ]);
   const [status, setStatus] = useState<boolean>(false);
 
   const changeStatus = (e: React.ChangeEvent<HTMLInputElement>) => {

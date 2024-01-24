@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { taskData } from "../constants/Task";
-import Task from "./Task";
+// import { tasksData } from "../constants/tasks";
+import Tasks from "./Tasks";
 import { TaskPropType } from "./types";
-import { Card, Container } from "react-bootstrap";
+import { Button, Card, Container, Pagination } from "react-bootstrap";
 import "./styles/TaskList.css";
+import axios from "axios";
+import { off } from "process";
 
 const TaskList = () => {
   const [tasks, setTask] = useState<TaskPropType["tasks"][]>([
@@ -13,80 +15,141 @@ const TaskList = () => {
       status: "complete",
     },
   ]);
-  const [filteredTask, setFilteredTask] = useState<TaskPropType["tasks"][]>([
+  const [filteredStatusTasks, setFilteredStatusTasks] = useState<
+    TaskPropType["tasks"][]
+  >([
     {
       id: 0,
       title: "",
       status: "complete",
     },
   ]);
-  const [status, setStatus] = useState<boolean>(false);
+  const [status, setStatus] = useState(false);
+
+  const [filter, setFilter] = useState<string>("All");
+
+  const [offset, setOffset] = useState(10);
 
   const changeStatus = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let taskID: number = parseInt(e.target.value);
-    let filteredData = taskData.filter((task) => task.id === taskID);
-    filteredData[0].status = e.target.checked ? "complete" : "incomplete";
+    let taskId: number = parseInt(e.target.value);
+    let filteredTask = tasks.filter((task) => task.id === taskId);
+    filteredTask[0].status = e.target.checked ? "complete" : "incomplete";
 
     setTask((prev) => {
-      let toReplaceData = prev.filter((data) => data.id === filteredData[0].id);
-
-      let toReplaceIndex = prev.indexOf(toReplaceData[0]);
-
-      prev.splice(toReplaceIndex, 1, filteredData[0]);
-
+      let toReplaceData = prev?.filter(
+        (data) => data.id === filteredTask[0].id
+      );
+      let toReplaceIndex = prev?.indexOf(toReplaceData[0]);
+      prev?.splice(toReplaceIndex, 1, filteredTask[0]);
       return [...prev];
     });
   };
-
   const filterFunction = (e: React.ChangeEvent<HTMLSelectElement>) => {
     console.log(e.target.value);
     if (e.target.value === "All") {
-      setFilteredTask(tasks);
+      setFilteredStatusTasks(tasks);
       setStatus(false);
     } else {
-      const filtered = tasks.filter((task) => task.status === e.target.value);
-      setFilteredTask(filtered);
+      let filtered = tasks.filter((task) => task.status === e.target.value);
+      setFilteredStatusTasks(filtered);
       setStatus(true);
-      // setTask(filtered);
     }
   };
-  useEffect(() => {
-    console.log("component mounted");
 
-    return () => {
-      console.log("unmounted");
-    };
-  }, []);
+  const apiCall = async () => {
+    let axiosRes = await axios
+      .get(
+        `https://7baedfcf-49f1-4541-8c17-97e25084a377.mock.pstmn.io/task/offset=${offset}`
+      )
+      .then((data) => {
+        const dataTodo = data.data;
+        setTask(dataTodo);
+        setFilteredStatusTasks(dataTodo);
+        console.log(dataTodo);
+      })
+      .catch((err) => err);
+    console.log(axiosRes);
+  };
+
+  const prevPage = () => {
+    setOffset((prev) => prev - 10);
+  };
+  const nextPage = () => {
+    setOffset((prev) => prev + 10);
+  };
+
+  // apiCall();
+  useEffect(() => {
+    apiCall();
+  }, [offset]);
+
+  useEffect(() => {
+    // console.log("changed");
+    // console.log(tasks);
+    if (filter !== "All")
+      setFilteredStatusTasks((prev) => {
+        return prev.filter((data) => data.status === filter);
+      });
+    // console.log(filteredStatusTasks);
+  }, [tasks]);
 
   return (
     <>
-      {console.log("mounting")}
-      <Container fluid>
-        <Card className="m-2">
+      {console.log("Mounting")}
+      <Container>
+        <Card className="m-3 customCard">
           <Card.Header>
-            Task for the day
-            <select className="ms-5" onChange={filterFunction}>
+            Tasks For The Day
+            <select
+              className="ms-5"
+              onChange={(e) => {
+                filterFunction(e);
+                setFilter(e.target.value);
+              }}
+            >
               <option selected value="All">
                 All
               </option>
-              <option value={"complete"}>complete</option>
-              <option value={"incomplete"}>incomplete</option>
+              <option value="complete">Complete</option>
+              <option value="incomplete">Incomplete</option>
             </select>
           </Card.Header>
-          {!status
-            ? tasks.map((task) => (
-                <Card.Body className="">
-                  {" "}
-                  <Task tasks={task} changeStatus={changeStatus} />
-                </Card.Body>
-              ))
-            : filteredTask.map((task) => (
-                <Card.Body className="">
-                  {" "}
-                  <Task tasks={task} changeStatus={changeStatus} />
-                </Card.Body>
-              ))}
-          <Card.Footer>********</Card.Footer>
+          <Card.Body>
+            {!status
+              ? tasks.map((task) => (
+                  <Card.Body className="">
+                    {" "}
+                    <Tasks tasks={task} onclick={changeStatus} />
+                  </Card.Body>
+                ))
+              : filteredStatusTasks.map((task) => (
+                  <Card.Body className="">
+                    {" "}
+                    <Tasks tasks={task} onclick={changeStatus} />
+                  </Card.Body>
+                ))}
+          </Card.Body>
+          <Card.Footer>
+            Thats all{" "}
+            <Button
+              variant="primary"
+              type="button"
+              onClick={() => (window.location.href = "/random")}
+            />{" "}
+            <Pagination>
+              <Pagination.Prev
+                onClick={prevPage}
+                disabled={offset === 10 ? true : false}
+              ></Pagination.Prev>
+              {/* <Pagination.Item>1</Pagination.Item>
+              <Pagination.Item active>2</Pagination.Item>
+              <Pagination.Item>3</Pagination.Item> */}
+              <Pagination.Next
+                onClick={nextPage}
+                disabled={offset === 40 ? true : false}
+              ></Pagination.Next>
+            </Pagination>
+          </Card.Footer>
         </Card>
       </Container>
     </>

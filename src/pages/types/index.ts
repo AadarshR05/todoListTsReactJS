@@ -1,7 +1,11 @@
 export type TaskPropType = {
-  tasks: { id: number; title: string; status: "complete" | "incomplete" };
+  tasks: {
+    id: number;
+    title: string;
+    status: "complete" | "incomplete";
+  };
 };
-export type TaskComponentType = {
+export type TaskComponentPropType = {
   tasks: TaskPropType["tasks"];
-  changeStatus: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onclick: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };

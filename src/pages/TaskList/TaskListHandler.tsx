@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-// import { tasksData } from "../constants/tasks";
-import Tasks from "./Tasks";
-import { TaskPropType } from "./types";
-import { Button, Card, Container, Pagination } from "react-bootstrap";
-import "./styles/TaskList.css";
+import Tasks from "../Tasks";
+import { TaskPropType } from "../types";
+import { Button, Card } from "react-bootstrap";
 import axios from "axios";
-import { off } from "process";
-
-const TaskList = () => {
+import TaskList from "./TaskList";
+const TaskListHandler = () => {
   const [tasks, setTask] = useState<TaskPropType["tasks"][]>([
     {
       id: 0,
@@ -92,68 +89,21 @@ const TaskList = () => {
       });
     // console.log(filteredStatusTasks);
   }, [tasks]);
-
   return (
-    <>
-      {console.log("Mounting")}
-      <Container>
-        <Card className="m-3 customCard">
-          <Card.Header>
-            Tasks For The Day
-            <select
-              className="ms-5"
-              onChange={(e) => {
-                filterFunction(e);
-                setFilter(e.target.value);
-              }}
-            >
-              <option selected value="All">
-                All
-              </option>
-              <option value="complete">Complete</option>
-              <option value="incomplete">Incomplete</option>
-            </select>
-          </Card.Header>
-          <Card.Body>
-            {!status
-              ? tasks.map((task) => (
-                  <Card.Body className="">
-                    {" "}
-                    <Tasks tasks={task} onclick={changeStatus} />
-                  </Card.Body>
-                ))
-              : filteredStatusTasks.map((task) => (
-                  <Card.Body className="">
-                    {" "}
-                    <Tasks tasks={task} onclick={changeStatus} />
-                  </Card.Body>
-                ))}
-          </Card.Body>
-          <Card.Footer>
-            Thats all{" "}
-            <Button
-              variant="primary"
-              type="button"
-              onClick={() => (window.location.href = "/random")}
-            />{" "}
-            <Pagination>
-              <Pagination.Prev
-                onClick={prevPage}
-                disabled={offset === 10 ? true : false}
-              ></Pagination.Prev>
-              {/* <Pagination.Item>1</Pagination.Item>
-              <Pagination.Item active>2</Pagination.Item>
-              <Pagination.Item>3</Pagination.Item> */}
-              <Pagination.Next
-                onClick={nextPage}
-                disabled={offset === 40 ? true : false}
-              ></Pagination.Next>
-            </Pagination>
-          </Card.Footer>
-        </Card>
-      </Container>
-    </>
+    <div>
+      <TaskList
+        filterFunction={filterFunction}
+        setFilter={setFilter}
+        tasks={tasks}
+        filteredStatusTasks={filteredStatusTasks}
+        changeStatus={changeStatus}
+        prevPage={prevPage}
+        nextPage={nextPage}
+        offset={offset}
+        status={status}
+      />
+    </div>
   );
 };
 
-export default TaskList;
+export default TaskListHandler;
